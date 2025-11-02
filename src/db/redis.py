@@ -19,3 +19,4 @@ async def token_in_blocklist(jti: str) -> bool:
     jti = await token_blocklist.get(name=jti)
 
     return jti is not None
+
