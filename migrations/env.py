@@ -10,8 +10,8 @@ from alembic import context
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 
-from src.auth.models import User  # noqa: F401
-from src.books.models import Book  # noqa: F401
+from src.db.models import User  # noqa: F401
+from src.db.models import Book  # noqa: F401
 from sqlmodel import SQLModel
 from src.config import Config
 

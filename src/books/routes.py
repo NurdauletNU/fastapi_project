@@ -1,5 +1,5 @@
 from typing import List
-from src.books.schemas import Book, BookCreateModel, BookUpdateModel
+from src.books.schemas import Book, BookCreateModel, BookUpdateModel, BookDetailModel
 from fastapi.exceptions import HTTPException
 from fastapi import APIRouter, status, Depends
 from src.db.main import get_session
@@ -51,7 +51,7 @@ async def create_a_book(book_data:BookCreateModel, session: AsyncSession = Depen
 
 
 
-@book_router.get('/{book_uid}', response_model = Book, dependencies = [role_checker])
+@book_router.get('/{book_uid}', response_model = BookDetailModel, dependencies = [role_checker])
 async def get_book(book_uid:str, session: AsyncSession = Depends(get_session), user_details = Depends(access_token_bearer))->dict:
     book = await book_service.get_book(book_uid, session)
     if book:
