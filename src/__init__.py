@@ -1,118 +1,47 @@
-from fastapi import FastAPI, status
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
+from src.auth.routes import auth_router
 from src.books.routes import book_router
-from src.auth.routers import auth_router
 from src.reviews.routes import review_router
 from src.tags.routes import tags_router
-from .errors import (
-    create_exception_handler,
-    InvalidCredentials,
-    TagAlreadyExists,
-    BookNotFound,
-    UserAlreadyExists,
-    UserNotFound,
-    InsufficientPermission,
-    AccessTokenRequired,
-    InvalidToken,
-    RefreshTokenRequired,
-    RevokedToken
-)
-
-
+from .errors import register_all_errors
+from .middleware import register_middleware
 
 
 version = "v1"
 
+description = """
+A REST API for a book review web service.
 
-app=FastAPI(
-    title='Bookly',
-    description='A REST API for a book review web service',
+This REST API is able to;
+- Create Read Update And delete books
+- Add reviews to books
+- Add tags to Books e.t.c.
+    """
+
+version_prefix =f"/api/{version}"
+
+app = FastAPI(
+    title="Bookly",
+    description=description,
     version=version,
-
+    license_info={"name": "MIT License", "url": "https://opensource.org/license/mit"},
+    contact={
+        "name": "Nurdaulet Uash",
+        "url": "https://github.com/NurdauletNU",
+        "email": "angelrangel2210@gmail.com",
+    },
+    terms_of_service="httpS://example.com/tos",
+    openapi_url=f"{version_prefix}/openapi.json",
+    docs_url=f"{version_prefix}/docs",
+    redoc_url=f"{version_prefix}/redoc"
 )
 
+register_all_errors(app)
+
+register_middleware(app)
 
 
-app.add_exception_handler(
-    UserAlreadyExists,
-    create_exception_handler(status_code=status.HTTP_403_FORBIDDEN, 
-                             initial_detail = {"message": "User with email already exists",
-                                               "error_code": "user exists "})
-)
-
-
-app.add_exception_handler(
-    UserNotFound,
-    create_exception_handler(status_code=status.HTTP_404_NOT_FOUND, 
-                             initial_detail = {"message": "User not found",
-                                               "error_code": "user not found "})
-)
-
-
-
-app.add_exception_handler(
-    BookNotFound,
-    create_exception_handler(status_code=status.HTTP_404_NOT_FOUND, 
-                             initial_detail = {"message": "Book not found",
-                                               "error_code": "book not found "})
-)
-
-
-app.add_exception_handler(
-    InvalidCredentials,
-    create_exception_handler(status_code=status.HTTP_400_BAD_REQUEST, 
-                             initial_detail = {"message": "Invalid email or password",
-                                               "error_code": "invalid_email_or_password"})
-)
-
-
-app.add_exception_handler(
-    InvalidToken,
-    create_exception_handler(status_code=status.HTTP_401_UNAUTHORIZED, 
-                             initial_detail = {"message": "Token is invalid or expired",
-                                               "resolution": "Please get new an access token",
-                                               "error_code": "invalid_token"})
-)
-
-
-app.add_exception_handler(
-    RevokedToken,
-    create_exception_handler(status_code=status.HTTP_401_UNAUTHORIZED, 
-                             initial_detail = {"message": "Token is invalid or has been revoked",
-                                               "error_code": "invalid_revoked"})
-)
-
-
-app.add_exception_handler(
-    AccessTokenRequired,
-    create_exception_handler(status_code=status.HTTP_403_FORBIDDEN, 
-                             initial_detail = {"message": "Please provide a valid access token",
-                                               "resolution": "Please get new an access token",
-                                               "error_code": "access_token_required"})
-)
-
-app.add_exception_handler(
-    RefreshTokenRequired,
-    create_exception_handler(status_code=status.HTTP_403_FORBIDDEN, 
-                             initial_detail = {"message": "Please provide a valid access token",
-                                               "resolution": "Please get new a refresh token",
-                                               "error_code": "access_token_required"})
-)
-
-
-@app.exception_handler(500)
-async def internal_server_error(request, exc):
-
-    return JSONResponse(
-            content={
-                "message": "Oops! Something went wrong",
-                "error_code": "server_error",
-            },
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
-
-
-app.include_router(book_router, prefix=f"/api/{version}/books", tags=['books'])
-app.include_router(auth_router, prefix=f"/api/{version}/auth", tags=['auth'])
-app.include_router(review_router, prefix=f"/api/{version}/reviews", tags=['reviews'])
-app.include_router(tags_router, prefix=f"/api/{version}/tags", tags=['tags'])
+app.include_router(book_router, prefix=f"{version_prefix}/books", tags=["books"])
+app.include_router(auth_router, prefix=f"{version_prefix}/auth", tags=["auth"])
+app.include_router(review_router, prefix=f"{version_prefix}/reviews", tags=["reviews"])
+app.include_router(tags_router, prefix=f"{version_prefix}/tags", tags=["tags"])
